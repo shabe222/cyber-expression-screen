@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.vite/
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# 运行时状态（agent 往这里推 payload，不该进仓库）
+public/live/board.json

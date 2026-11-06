@@ -1,0 +1,73 @@
+{
+  "character": "whale-girl",
+  "title": "鲸鱼少女",
+  "size": [832, 1216],
+  "format": "PNG / RGBA / 透明底（可直接叠在屏上）",
+  "seed": 20261017,
+  "generator": {
+    "engine": "ComfyUI 0.36.0 (--lowvram)",
+    "checkpoint": "animagine-xl-3.1.safetensors",
+    "lora": "sdxl_lightning_4step_lora.safetensors (strength 1.0/1.0)",
+    "steps": 6,
+    "cfg": 2.0,
+    "sampler": "dpmpp_sde",
+    "scheduler": "sgm_uniform",
+    "denoise": 1.0
+  },
+  "states": {
+    "idle": {
+      "file": "whale-girl-idle.png",
+      "label": "待机",
+      "raw": "raw/idle_whalegirl-idle_00003_.png",
+      "seconds": 24.3,
+      "expression": "neutral expression, closed mouth, calm"
+    },
+    "smile": {
+      "file": "whale-girl-smile.png",
+      "label": "笑",
+      "raw": "raw/smile_whalegirl-smile_00005_.png",
+      "seconds": 18.8,
+      "expression": "smiling, open mouth, happy, cheerful, blush, (whale tail:1.8), whale fluke, huge tail, holding whale plush, (whale plush:1.4), stuffed whale"
+    },
+    "charm": {
+      "file": "whale-girl-charm.png",
+      "label": "卖萌",
+      "raw": "raw/charm_whalegirl-charm_00004_.png",
+      "seconds": 14.1,
+      "expression": "winking, one eye closed, tongue out, playful, blush, holding whale plush, (whale plush:1.4), stuffed whale"
+    },
+    "think": {
+      "file": "whale-girl-think.png",
+      "label": "思考",
+      "raw": "raw/think_whalegirl-think_00003_.png",
+      "seconds": 14.1,
+      "expression": "thinking, hand on chin, closed eyes, head tilt"
+    },
+    "shy": {
+      "file": "whale-girl-shy.png",
+      "label": "害羞",
+      "raw": "raw/shy_whalegirl-shy_00003_.png",
+      "seconds": 14.1,
+      "expression": "embarrassed, blush, hands on own cheeks, tsundere, pout"
+    },
+    "run": {
+      "file": "whale-girl-run.png",
+      "label": "跑",
+      "raw": "raw/run_whalegirl-run_00003_.png",
+      "seconds": 14.1,
+      "expression": "running, dynamic pose, wind, hair blowing, skirt lift, motion lines, leaning forward, one leg up, (maid shoes:1.3), black footwear",
+      "negative_extra": "standing, standing still, static pose, motion blur, (ground shadow:1.6), black shadow, ellipse on ground, contact shadow"
+    },
+    "wave": {
+      "file": "whale-girl-wave.png",
+      "label": "挥手",
+      "raw": "raw/wave_whalegirl-wave_00001_.png",
+      "seconds": 14.1,
+      "expression": "waving, hand up, greeting, smile, looking at viewer"
+    }
+  },
+  "required_for_mvp": ["idle", "smile", "charm"],
+  "bonus": ["think", "shy"],
+  "b1_actions": ["run", "wave"],
+  "notes": "7 张同一角色：同 seed + 同基底 prompt，仅表情/姿态 tag 不同（run 另加负面词压掉 standing 与地面投影）。详见 docs/art-notes.md"
+}

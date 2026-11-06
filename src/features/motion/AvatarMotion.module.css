@@ -1,0 +1,186 @@
+/**
+ * 化身动作过渡（纯 CSS，零动画库）。
+ *
+ * 三层分工：
+ * - .layer 跑进场/退场（淡入淡出 + 轻微位移）
+ * - .breathe* 跑呼吸（缩放 + 上浮）—— 与进场动画分层，否则 animation 简写会互相覆盖
+ * - .eyelid 跑眨眼（眼睛高度压一道柔和暗影）
+ */
+
+/* 尺寸链条要一路"确定高度"到底，img 的 max-height:100% 才有参照物；
+   中间任何一层是 auto 高度，百分比就会失效、图会按原始尺寸撑破面板。 */
+.box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  /* min-width:0 是必须的：flex 项默认 min-width:auto，会被内容撑宽，
+     而这一层一旦被撑宽，下面 .stack 的 max-width:100% 就跟着失效（下面有实测记录）。 */
+  min-width: 0;
+}
+
+/* 用 aspect-ratio 让这一层恰好等于立绘本身：
+   这样眨眼条按百分比定位才落在真正的眼睛高度上（而不是留白区）。
+
+   ★ task-5 修复：这里原来只有 `height:100% + aspect-ratio + max-width:100%`，
+   在 Chrome 里**百分比 max-width 夹不住 aspect-ratio 推出来的宽度** ——
+   实测 734px 高推出 502px 宽，而容器只有 312px，立绘右边被裁掉 210px。
+   现在两头都夹：高度取 min(容器高, 容器宽÷纵横比)，宽度再由 aspect-ratio 推出，必然 ≤ 容器宽。
+   `100cqw` 需要 .stage 上有 container-type: size（AvatarSlot.module.css 已给），
+   所以用 @supports 渐进增强；不支持时退回原来的 height:100% 行为，不会更糟。 */
+.stack {
+  position: relative;
+  height: 100%;
+  max-height: 100%;
+  aspect-ratio: var(--cs-avatar-ar, 0.6842);
+  max-width: 100%;
+  min-width: 0;
+}
+
+@supports (container-type: size) {
+  .stack {
+    height: min(100%, calc(100cqw / var(--cs-avatar-ar, 0.6842)));
+  }
+}
+
+.layer {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* 退场的那一张压在下面一层：两张同时在场，交接处不空一拍 */
+.exit {
+  position: absolute;
+  inset: 0;
+}
+
+.img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+}
+
+.enter {
+  animation: csAvatarIn 460ms cubic-bezier(0.16, 0.84, 0.34, 1) both;
+}
+
+.exit {
+  animation: csAvatarOut 460ms ease-in both;
+}
+
+@keyframes csAvatarIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.972);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes csAvatarOut {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.984);
+  }
+}
+
+/* ---------------- 呼吸 ---------------- */
+
+/* 支点在下方：像人站着呼吸，不是整体放大 */
+.breatheIdle {
+  height: 100%;
+  transform-origin: 50% 92%;
+  animation: csBreatheIdle 4.2s ease-in-out infinite;
+}
+
+.breatheSoft {
+  height: 100%;
+  transform-origin: 50% 92%;
+  animation: csBreatheSoft 5.4s ease-in-out infinite;
+}
+
+@keyframes csBreatheIdle {
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.018) translateY(-4px);
+  }
+}
+
+@keyframes csBreatheSoft {
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.008) translateY(-2px);
+  }
+}
+
+/* ---------------- 眨眼 ---------------- */
+
+/* 一道柔和的暗影压在眼睛高度。立绘是位图，没有"闭眼差分"，
+   所以这里用暗影模拟眼睑落下的那一下；美术线出了闭眼差分后可换成差分淡入。
+   位置/宽度由组件按立绘实测值给 CSS 变量（换构图只改组件默认值，不动这里）。 */
+.eyelid {
+  position: absolute;
+  left: var(--cs-eye-x, 46%);
+  top: var(--cs-eye-line, 19.5%);
+  width: var(--cs-eye-w, 20%);
+  height: 2.2%;
+  transform: translate(-50%, -50%) scaleY(0);
+  border-radius: 999px;
+  background: linear-gradient(
+    to bottom,
+    rgba(4, 7, 13, 0) 0%,
+    rgba(4, 7, 13, 0.55) 45%,
+    rgba(4, 7, 13, 0.55) 55%,
+    rgba(4, 7, 13, 0) 100%
+  );
+  filter: blur(2.5px);
+  opacity: 0;
+  transition: opacity 90ms linear, transform 90ms linear;
+  pointer-events: none;
+}
+
+.eyelidOn {
+  opacity: 0.75;
+  transform: translate(-50%, -50%) scaleY(1);
+}
+
+.empty {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--cs-neutral-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enter,
+  .exit {
+    animation-duration: 1ms;
+  }
+
+  .breatheIdle,
+  .breatheSoft {
+    animation: none;
+  }
+
+  .eyelid {
+    transition: none;
+  }
+}

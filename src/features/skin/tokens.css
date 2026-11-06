@@ -1,0 +1,92 @@
+/**
+ * 全能赛博表述屏幕 · 设计令牌（A2 玻璃科幻皮肤）
+ *
+ * 审美纪律（宪章第五节 / 用户三色体系）：
+ * - 三色体系：主色（鲸蓝青）/ 强调（鲸尾粉）/ 中性（冷白）
+ * - 深色底，玻璃拟态（半透明 + 模糊 + 层叠）+ 科幻 HUD（辉光 / 细线 / 扫描 / 网格）
+ * - 不用 emoji：图标一律内联 SVG
+ *
+ * 所有颜色只在这里定义一次，组件与黑板皮肤都从这里取，避免各写各的色值。
+ */
+
+:root {
+  /* ---------- 三色体系 ---------- */
+  /* 主色：鲸蓝青（深海、鲸鱼、信号） */
+  --cs-primary: #43d9e6;
+  --cs-primary-soft: #8fecf4;
+  --cs-primary-deep: #1b7f8c;
+  /* 强调：鲸尾粉（心情、被指到的那一处） */
+  --cs-accent: #ff7aa8;
+  --cs-accent-soft: #ffb3cc;
+  --cs-accent-deep: #a84066;
+  /* 中性：冷白（文字、刻度、次要线） */
+  --cs-neutral: #e6eef5;
+  --cs-neutral-dim: #a9bccb;
+  /* 次要文字：原来 #5d6f80（luma 0.44）压在近黑壳上偏暗，
+     抬到 0.55 —— 底栏/组标题/提示语都是它，读起来不再需要凑近。 */
+  --cs-neutral-faint: #7a8ea0;
+
+  /* ---------- 深色底：**深海，不是黑洞** ----------
+     为什么抬高：板面实测平均 luma ≈0.67，旧壳只有 0.05 —— 两者相差 6.5:1，
+     而板面**顶缘单像素跳变 Δ0.80**（0.087 → 0.889），这就是"晃眼"的物理来源。
+     壳抬到 ~0.07 之后，眼睛的适应范围能盖住板面与周围的落差，长时间看不累。
+     注意：抬地板只解决"远场是纯黑"，真正消除断层靠的是**板面周围那圈缓坡**（见 skin.css / Screen.module.css）。 */
+  --cs-bg-0: #0c1620;
+  --cs-bg-1: #101d2a;
+  --cs-bg-2: #152636;
+  --cs-bg-3: #1a3242;
+
+  /* ---------- 玻璃 ---------- */
+  --cs-glass-bg: rgba(16, 30, 46, 0.42);
+  --cs-glass-bg-strong: rgba(11, 21, 34, 0.66);
+  --cs-glass-border: rgba(120, 205, 225, 0.14);
+  --cs-glass-border-strong: rgba(120, 205, 225, 0.24);
+  --cs-glass-sheen: rgba(230, 245, 255, 0.07);
+  --cs-glass-blur: 18px;
+
+  /* ---------- 板面反照（新）----------
+     亮板把光洒回壳里。三个值分别是：紧贴板面的内溢光 / 面板外的宽幅光晕 / 大范围环境反照。
+     这是"深壳贴亮板不再扎眼"的主要手段 —— 用**空间上的缓坡**代替一刀切的边界。 */
+  --cs-bounce-near: rgba(214, 238, 244, 0.16);
+  --cs-bounce-halo: rgba(196, 228, 238, 0.12);
+  --cs-bounce-far: rgba(120, 205, 225, 0.075);
+
+  /* ---------- 辉光（按"舒服"收敛）----------
+     旧值 0.5 / 0.22 是"暗房里打手电"的强度；亮板在场时它会变成第二光源、抢注意力。
+     收敛后仍然读得出"在发光"，但不再刺眼。 */
+  --cs-glow-primary: 0 0 8px rgba(67, 217, 230, 0.34);
+  --cs-glow-primary-soft: 0 0 18px rgba(67, 217, 230, 0.16);
+  --cs-glow-accent: 0 0 8px rgba(255, 122, 168, 0.34);
+  --cs-glow-inset: inset 0 0 24px rgba(67, 217, 230, 0.05);
+
+  /* ---------- 细线 / 网格 / 扫描 ----------
+     网格从 44px 放宽到 56px：格子更疏 → 高频细节更少 → 盯着看不累（质感仍在）。
+     CRT 细横纹周期从 3px 放宽到 4px、浓度降下来：3px 周期是"摩尔纹/闪烁"的高发区。 */
+  --cs-hairline: rgba(120, 205, 225, 0.2);
+  --cs-hairline-faint: rgba(120, 205, 225, 0.09);
+  --cs-grid-line: rgba(67, 217, 230, 0.042);
+  --cs-grid-size: 56px;
+  --cs-scanline: rgba(67, 217, 230, 0.032);
+  --cs-scanline-period: 4px;
+
+  /* ---------- 版式 ---------- */
+  --cs-font-ui: "Inter", "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  --cs-font-hand: "KaiTi", "楷体", "STKaiti", "Kaiti SC", "Microsoft YaHei", sans-serif;
+  --cs-font-mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+  --cs-radius: 14px;
+  --cs-radius-sm: 8px;
+
+  /* ---------- 借来的黑板组件所需的主题变量 ----------
+     黑板基线里的字幕用了柿子智学的主题变量名（--tide-*），
+     在这里补上对应值，就不必去改它的 CSS Module 也能融入本屏配色。 */
+  --tide-ink-muted: var(--cs-neutral);
+  --tide-line-active: var(--cs-primary);
+  --tide-font-editorial: var(--cs-font-hand);
+
+  /* 板面自身（清新透亮的玻璃 + 背后模糊的景色）
+     真正的板面视觉在 features/blackboard/glass.ts（那边是单一事实源，屏上/预览器共用）；
+     这里留三个值只是给"想在 CSS 里引用板面色"的地方一个对齐的锚点。 */
+  --cs-board-surface-0: #f6fbfd;
+  --cs-board-surface-1: #e9f2f2;
+  --cs-board-surface-2: #a9c9b8;
+}

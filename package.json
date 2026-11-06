@@ -1,0 +1,38 @@
+{
+  "name": "cyber-expression-screen",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "玻璃科幻风的 AI agent 表述屏：一块会自己画画的黑板 + 一个能动的化身容器。React + Canvas，零重依赖。",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5180 --strictPort",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview --host 127.0.0.1 --port 5180 --strictPort"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
+  },
+  "keywords": [
+    "canvas",
+    "ai-agent",
+    "blackboard",
+    "avatar",
+    "react",
+    "vite",
+    "generative-visual"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shabe222/cyber-expression-screen.git"
+  },
+  "homepage": "https://github.com/shabe222/cyber-expression-screen#readme",
+  "license": "MIT"
+}

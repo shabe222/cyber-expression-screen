@@ -1,0 +1,379 @@
+/* 主屏版式：HUD 顶栏 / 表述板 + 化身侧栏 / 状态底栏 */
+
+.screen {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 0.8rem;
+  padding: 0.9rem 1.1rem 1rem;
+}
+
+/* ---------------- 顶栏 ---------------- */
+
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.brandMark {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid var(--cs-glass-border-strong);
+  border-radius: 12px;
+  background: rgba(12, 26, 40, 0.6);
+  box-shadow: var(--cs-glow-primary-soft), var(--cs-glow-inset);
+}
+
+.brandGlyph {
+  width: 1.4rem;
+  height: 1.4rem;
+  color: var(--cs-primary);
+  filter: drop-shadow(0 0 6px rgba(67, 217, 230, 0.5));
+}
+
+.brandText {
+  display: block;
+}
+
+.brandTitle {
+  margin: 0;
+  font-size: 1.06rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--cs-neutral);
+  text-shadow: 0 0 18px rgba(67, 217, 230, 0.28);
+}
+
+.brandSub {
+  margin: 0.1rem 0 0;
+  font-family: var(--cs-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  color: var(--cs-neutral-faint);
+}
+
+.chips {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ---------------- 舞台 ---------------- */
+
+.stage {
+  display: grid;
+  /* 侧栏 19.5rem → 23rem：化身立绘是 832×1216 的竖图，19.5rem 的窄栏装不下它 ——
+     实测 img 被撑到 502px 宽、面板只有 312px，**右边被裁掉 210px**（人像被竖着切一半）。
+     加宽到 23rem 之后按高度受限也能完整放下（见 AvatarMotion.module.css 的尺寸链修复）。 */
+  grid-template-columns: minmax(0, 1fr) 23rem;
+  gap: 0.8rem;
+  min-height: 0;
+}
+
+/**
+ * 板面外溢光（板子**外面**那一半）。
+ *
+ * 板面周围的缓坡分两半：
+ * - **面板里面**（板面与面板边之间那条缝）→ 靠 `.boardSurface` 的背景渐变（见下）；
+ * - **面板外面**（壳上）→ 靠这里的 box-shadow。元素自己的 box-shadow 不会被自己的
+ *   overflow:hidden 裁掉，所以这一半能真的落到壳上，与 body 的大范围反照接起来。
+ *
+ * 板面是这块屏上唯一的光源，所以它的外溢光比普通面板更强；
+ * 右下角带一点鲸尾粉（三色体系里的强调色），只在最暗的一角轻轻扫一下。
+ */
+.boardPanel {
+  min-height: 0;
+  box-shadow:
+    var(--cs-glow-inset),
+    inset 0 1px 0 rgba(230, 245, 255, 0.08),
+    0 22px 52px rgba(0, 0, 0, 0.44),
+    0 0 78px 6px var(--cs-bounce-halo),
+    22px 26px 60px rgba(255, 122, 168, 0.05);
+}
+
+.boardHead {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 0.95rem 0.5rem;
+  border-bottom: 1px solid var(--cs-hairline-faint);
+}
+
+.boardHeadIcon {
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--cs-primary);
+  flex: none;
+}
+
+.boardHeadTitle {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--cs-neutral-dim);
+}
+
+.boardHeadMeta {
+  margin-left: auto;
+  font-family: var(--cs-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--cs-primary-soft);
+}
+
+/* 说话区：固定高度，字幕进出时板面不跳 */
+.narrationRow {
+  position: relative;
+  /* 压在板面内溢光之上：字要读得清，不能让光把它冲淡 */
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  min-height: 2.5rem;
+  padding: 0.45rem 0.95rem 0;
+}
+
+/* agent 口播（Live 通道推来的那一句）：主色竖线点出"这句正在说" */
+.say {
+  margin: 0;
+  padding-left: 0.7rem;
+  border-left: 2px solid var(--cs-primary);
+  color: var(--cs-neutral);
+  font-family: var(--cs-font-hand);
+  font-size: clamp(1rem, 1.2vw, 1.2rem);
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  text-wrap: pretty;
+  animation: sayIn 0.36s cubic-bezier(0.16, 0.84, 0.34, 1) both;
+}
+
+@keyframes sayIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* 通道没连上时那颗点变灰、不跳 */
+.dotDim {
+  background: var(--cs-neutral-faint);
+  box-shadow: none;
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .say {
+    animation: none;
+  }
+}
+
+.boardSurface {
+  position: relative;
+  /* 抬到内溢光之上，板面才不会被自己的反照冲淡 */
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  /**
+   * 板面四周的缝（moat）：**这里是消除"亮度断层"的主力**。
+   *
+   * 实测原来最扎的一处在板面**顶缘**：壳 0.085 → 板 0.878，**单像素 Δ0.79**；
+   * 左缘 Δ0.635、右缘 Δ0.379，四周全是"一刀切"。
+   *
+   * 为什么用「这一层的背景渐变」而不是 box-shadow / 面板上的伪元素：
+   * - 外 box-shadow 只画在**盒子外面**，而缝在 `.boardSurface` 的 **padding 里** —— 照不到；
+   *   更糟的是 `.panel` 有 overflow:hidden，连盒子外面的那半也被裁掉了（实测毫无效果）。
+   * - 背景渐变天然铺满自己的 padding 区（缝就在那儿），且画在子元素**下面**，不用抢层叠。
+   * - 渐变锚在**板面自己的盒子**上：标题条/说话区高度变了，缝的宽度不变，光晕永远贴着板面。
+   *
+   * 四条边各一条"由外到内变亮"的带：缝的外沿近乎透明、紧贴板面处最亮（0.30）。
+   * 于是"板 → 缝"的那一步被抬到 ~0.36 亮度，落差从 0.79 降到 ~0.4，而且是 20~28px 的连续坡。
+   * padding 从 12/15px 加到 22/24px，就是为了给这条坡留出展开的地方。
+   */
+  padding: 1.35rem 1.5rem 1.1rem;
+  /**
+   * 四条"光溢"带 —— 峰值在板面可见边附近，**两端都回到 0**。
+   *
+   * ★ 标定过程记下来（两版都调错过，别再踩）：
+   * - 第一版峰值 0.30 ⇒ 缝变成一圈亮带，板面像被放进**浅色相框**，自己的硬边反而糊了，
+   *   整屏也"平"了 —— 正是任务里说的"为了舒服把质感做平"。**做平 ≠ 舒服。**
+   * - 第二版峰值降到 0.12，但带子是 `0.015 → 0.12 → 0.12 到头`：**外端是硬切**，
+   *   于是在面板里画出两个**看得见边界的浅色矩形**（4 倍放大一眼就看到直角）。
+   *   ⇒ 带子必须**两端都归零**（`0 → 峰值 → 0`），才不会自己造出新的硬边。
+   * - 最终值 0.12：缝里读到"板面的光漏出来一点"，板面边缘仍是硬边。
+   *   亮屏在暗房里本来就该有一条硬边（那是玻璃切边的质感）；要削的不是这条边，
+   *   是**它两侧的亮度落差** —— 靠抬地板（tokens 的 --cs-bg-*）+ 面板外的光晕（.boardPanel）
+   *   + 缝里这层薄光溢，三者一起把落差从 6.5:1 压到 ~3:1。
+   *
+   * 几何（实测校出来的）：板面（SVG）自带一圈透明边距，板面**看得见的边**在缝外 1~4px 处
+   * （实测 `.boardSurface` 左边 18.6 → 板面可见左边 44）。所以峰值取 22px、带子长到 52px，
+   * 峰值之后那段藏在板面下面 —— 窗口缩放让边距 ±3px 浮动时，板面边上的亮度不会缺一块。
+   */
+  background:
+    linear-gradient(to bottom, rgba(226, 244, 250, 0) 0px, rgba(226, 244, 250, 0.12) 22px, rgba(226, 244, 250, 0) 52px)
+      top / 100% 52px no-repeat,
+    linear-gradient(to top, rgba(226, 244, 250, 0) 0px, rgba(226, 244, 250, 0.12) 16px, rgba(226, 244, 250, 0) 44px)
+      bottom / 100% 44px no-repeat,
+    linear-gradient(to right, rgba(226, 244, 250, 0) 0px, rgba(226, 244, 250, 0.12) 22px, rgba(226, 244, 250, 0) 52px)
+      left / 52px 100% no-repeat,
+    linear-gradient(to left, rgba(226, 244, 250, 0) 0px, rgba(226, 244, 250, 0.12) 22px, rgba(226, 244, 250, 0) 52px)
+      right / 52px 100% no-repeat;
+}
+
+.board {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 0.85rem 0.8rem;
+  border-top: 1px solid var(--cs-hairline-faint);
+}
+
+.controlGap {
+  flex: 1 1 auto;
+}
+
+/* ---------------- 侧栏 ---------------- */
+
+.side {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 0.8rem;
+  min-height: 0;
+}
+
+.infoPanel {
+  flex: none;
+}
+
+.infoHead {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 0.95rem 0.5rem;
+  border-bottom: 1px solid var(--cs-hairline-faint);
+}
+
+.infoIcon {
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--cs-accent);
+  flex: none;
+}
+
+.infoTitle {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--cs-neutral-dim);
+}
+
+.infoList {
+  margin: 0;
+  padding: 0.6rem 0.95rem 0.8rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.infoRow {
+  display: grid;
+  grid-template-columns: 4.4rem minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.infoRow dt {
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  color: var(--cs-neutral-faint);
+}
+
+.infoRow dd {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--cs-neutral-dim);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* ---------------- 底栏 ----------------
+   它是"一眼看得懂在发生什么"的地方，所以按可读性重配：
+   原来 --cs-neutral-faint（#5d6f80）压在 0.05 的壳上，实测对比度不足、要凑近看。
+   现在颜色提到 dim、底色抬一点、字号 0.7→0.74rem、字距收紧一点（等宽字 + 过宽字距更费眼）。 */
+
+.statusBar {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--cs-hairline-faint);
+  border-radius: var(--cs-radius-sm);
+  background: rgba(16, 30, 44, 0.46);
+  font-family: var(--cs-font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  color: var(--cs-neutral-dim);
+}
+
+.statusItem {
+  white-space: nowrap;
+}
+
+/* "现在在做什么"那一格：给一点主色，扫一眼就能定位 */
+.statusItem[data-playing="1"] {
+  color: var(--cs-primary-soft);
+}
+
+.statusKey {
+  color: var(--cs-neutral-faint);
+}
+
+.statusSep {
+  width: 1px;
+  height: 0.9rem;
+  background: var(--cs-hairline);
+}
+
+.statusGap {
+  flex: 1 1 auto;
+}
+
+/* ---------------- 窄屏：化身位挪到板子下面 ---------------- */
+
+@media (max-width: 1080px) {
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .side {
+    grid-template-rows: none;
+    grid-template-columns: 18rem 12.5rem minmax(0, 1fr);
+  }
+}

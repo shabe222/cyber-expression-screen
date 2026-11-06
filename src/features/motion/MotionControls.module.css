@@ -1,0 +1,56 @@
+/* 动作切换面板 */
+
+.panel {
+  flex: none;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 0.95rem 0.5rem;
+  border-bottom: 1px solid var(--cs-hairline-faint);
+}
+
+.headIcon {
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--cs-accent);
+  flex: none;
+}
+
+.headTitle {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--cs-neutral-dim);
+}
+
+.headState {
+  margin-left: auto;
+  font-family: var(--cs-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--cs-primary-soft);
+}
+
+.body {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem 0.8rem;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.note {
+  margin: 0;
+  font-family: var(--cs-font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  color: var(--cs-neutral-faint);
+}

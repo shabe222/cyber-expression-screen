@@ -1,0 +1,124 @@
+/* 调试抽屉：贴底的玻璃抽屉，盖住舞台下沿 */
+
+.layer {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  padding: 0 1.1rem 1rem;
+  pointer-events: none;
+}
+
+.sheet {
+  width: min(100%, 76rem);
+  max-height: 62vh;
+  pointer-events: auto;
+  /**
+   * 抽屉是**操作面**，不是被动的一层玻璃 —— 它浮在板面之上，板面又是全屏最亮的东西。
+   * 面板的通用底色（.panelStrong）是给"贴在壳上"的分区用的，透光度偏高；
+   * 抽屉直接盖住亮板时，那点透光度会让标题落在亮底上、读不清（实测：组标题压在板面上时几乎看不见）。
+   * 所以这里单独把底色压实、并加强模糊 —— 玻璃质感靠边与模糊保留，内容先要读得清。
+   */
+  background:
+    linear-gradient(to bottom, rgba(18, 34, 50, 0.9) 0%, rgba(11, 21, 34, 0.94) 46%, rgba(9, 17, 28, 0.95) 100%);
+  backdrop-filter: blur(26px) saturate(1.2);
+  -webkit-backdrop-filter: blur(26px) saturate(1.2);
+  animation: dbgIn 0.24s cubic-bezier(0.16, 0.84, 0.34, 1) both;
+}
+
+@keyframes dbgIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.7rem 0.95rem 0.55rem;
+  border-bottom: 1px solid var(--cs-hairline-faint);
+}
+
+.headIcon {
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--cs-primary);
+  flex: none;
+}
+
+.headTitle {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--cs-neutral-dim);
+}
+
+.headNote {
+  font-family: var(--cs-font-mono);
+  font-size: 0.68rem;
+  color: var(--cs-neutral-faint);
+}
+
+.head button {
+  margin-left: auto;
+}
+
+.body {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.75rem 0.95rem 0.9rem;
+  overflow: auto;
+  max-height: calc(62vh - 3rem);
+}
+
+.group {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.groupTitle {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--cs-neutral-faint);
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.groupNote {
+  margin: 0;
+  font-family: var(--cs-font-mono);
+  font-size: 0.64rem;
+  color: var(--cs-neutral-faint);
+  opacity: 0.7;
+}
+
+/* 抽屉里的面板不要再套一层玻璃边框，直接平铺 */
+.inlinePanel {
+  border: 0;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+
+.humanWrap {
+  border: 1px solid var(--cs-hairline-faint);
+  border-radius: var(--cs-radius-sm);
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet {
+    animation: none;
+  }
+}

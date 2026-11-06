@@ -1,0 +1,100 @@
+/**
+ * 全局底：**被板面照亮的深舱**（不是深色底 + 一块亮板）。
+ *
+ * task-5 的核心改动在这里：亮板贴在近黑的壳上时，交界处是"一刀切"的亮度断层
+ * （实测板面顶缘**单像素跳变 Δ0.80**）。解法不是把壳刷白（那会把质感做平），
+ * 而是让壳**接收板面的光**：
+ *   body 底 = 深海基色 + 三层由近到远的反照（board bounce）
+ * ⇒ 板面 → 壳 之间从"一步 0.8"变成"一段 200px 的缓坡"，而板本身的玻璃质感一点没动。
+ *
+ * 网格也顺手改了一笔：它的遮罩中心跟着板面走 —— 板子附近网格略清楚、四角化开，
+ * 读起来就像"网格是被板子照亮的"，而不是一张贴在整屏上的贴纸。
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background:
+    /* ① 近场：板面正上方的冷白反照（对应 glass.ts 里板面左上最亮的那一片） */
+    radial-gradient(720px 560px at 27% 26%, rgba(226, 244, 250, 0.07), transparent 72%),
+    /* ② 中景：板面整体的宽幅光晕 —— 这一层负责把"断层"摊成缓坡 */
+    radial-gradient(1150px 820px at 36% 46%, var(--cs-bounce-far), transparent 70%),
+    /* ③ 远景：原有的一冷一暖两团氛围光，按"舒服"收敛过 */
+    radial-gradient(1200px 800px at 18% -10%, rgba(67, 217, 230, 0.075), transparent 60%),
+    radial-gradient(900px 700px at 105% 110%, rgba(255, 122, 168, 0.06), transparent 62%),
+    var(--cs-bg-0);
+  color: var(--cs-neutral);
+  font-family: var(--cs-font-ui);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* 网格底纹：科幻 HUD 的地平线感。压到几乎看不见，只提供质感。
+   遮罩中心跟着板面（27% 30%）→ 板子附近有网格、四角化开 = "被板子照亮"。 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(to right, var(--cs-grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--cs-grid-line) 1px, transparent 1px);
+  background-size: var(--cs-grid-size) var(--cs-grid-size);
+  mask-image: radial-gradient(96% 88% at 32% 36%, #000 22%, rgba(0, 0, 0, 0.45) 58%, transparent 100%);
+  -webkit-mask-image: radial-gradient(96% 88% at 32% 36%, #000 22%, rgba(0, 0, 0, 0.45) 58%, transparent 100%);
+}
+
+/* 细横纹：CRT 质感。周期 4px（旧 3px）、浓度更低 ——
+   3px 周期正落在"摩尔纹/闪烁"的高发区，放宽一格之后同样的质感不再有高频感。 */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--cs-scanline) 0px,
+    var(--cs-scanline) 1px,
+    transparent 1px,
+    transparent var(--cs-scanline-period)
+  );
+  opacity: 0.42;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 1px solid var(--cs-primary);
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--cs-hairline);
+  border-radius: 4px;
+}

@@ -1,0 +1,291 @@
+/**
+ * 玻璃科幻皮肤的组件样式（A2）。
+ * 全部走 CSS Module，零动画库 —— 关键帧都写在 CSS 里。
+ *
+ * task-5「壳与亮板协调」在这里落三件事：
+ * ① 面板的边**有方向**：上沿亮、下沿隐（光从上方来）—— 比一圈等亮的描边更像真玻璃；
+ * ② 面板外**有光溢**：宽幅低浓度的亮色 box-shadow，把"板↔壳"的一刀切摊成缓坡；
+ * ③ 辉光/扫描/脉冲按"长时间看不累"重新配平（强度降、周期放慢）。
+ * 板面材料本身（features/blackboard/glass.ts）一个字没动。
+ */
+
+/* ---------------- 玻璃面板 ---------------- */
+
+.panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  /* 有方向的边：上沿接光、下沿沉下去。等亮描边会让面板读起来像贴纸。 */
+  border: 1px solid var(--cs-glass-border);
+  border-top-color: rgba(196, 236, 246, 0.26);
+  border-bottom-color: rgba(120, 205, 225, 0.08);
+  border-radius: var(--cs-radius);
+  background: var(--cs-glass-bg);
+  backdrop-filter: blur(var(--cs-glass-blur)) saturate(1.25);
+  -webkit-backdrop-filter: blur(var(--cs-glass-blur)) saturate(1.25);
+  box-shadow:
+    var(--cs-glow-inset),
+    /* 上沿一道内高光 = 玻璃的厚度感 */
+    inset 0 1px 0 rgba(230, 245, 255, 0.07),
+    0 18px 44px rgba(0, 0, 0, 0.42),
+    /* 光溢：面板四周一圈宽而淡的亮色，板面的亮度在这里"漏"到壳上 */
+    0 0 46px 2px var(--cs-bounce-halo);
+  overflow: hidden;
+}
+
+/* 渐变描边：左上接光 → 右下化开，末梢带一点鲸尾粉（三色体系里那个强调色）。
+   用 mask-composite 挖出 1px 的环；不支持时自动退回上面那条普通边，不会画出整块渐变。 */
+@supports (mask-composite: exclude) {
+  .panel {
+    border-color: transparent;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+  }
+
+  .panel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      152deg,
+      rgba(214, 244, 252, 0.46) 0%,
+      rgba(120, 205, 225, 0.2) 26%,
+      rgba(120, 205, 225, 0.07) 58%,
+      rgba(255, 122, 168, 0.16) 100%
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+
+.panelStrong {
+  /* 不再是一块平色：上亮下暗的极淡渐变 = "面板自己也被光扫到"，
+     板面贴上来时两者之间就没有"平色 vs 亮板"的生硬对比。
+     幅度刻意压小（0.34 → 0.7）：再亮一点，整块面板就会读成"浅色相框"，
+     板面自己的硬边反而糊掉 —— 那是"把质感做平"，不是"舒服"。 */
+  background:
+    linear-gradient(to bottom, rgba(26, 48, 66, 0.34) 0%, rgba(13, 24, 38, 0.6) 44%, rgba(11, 20, 32, 0.68) 100%);
+  border-color: var(--cs-glass-border-strong);
+  border-top-color: rgba(196, 236, 246, 0.3);
+  box-shadow:
+    var(--cs-glow-inset),
+    inset 0 1px 0 rgba(230, 245, 255, 0.08),
+    0 22px 52px rgba(0, 0, 0, 0.46),
+    0 0 62px 4px var(--cs-bounce-halo);
+}
+
+/* 玻璃上沿的一道光：让"这是一块玻璃"读得出来 */
+.panelSheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    160deg,
+    var(--cs-glass-sheen) 0%,
+    rgba(230, 245, 255, 0.022) 26%,
+    transparent 55%
+  );
+}
+
+/* 面板标题条：细线 + 小字 + 主色点 */
+.panelHead {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.95rem 0.55rem;
+  border-bottom: 1px solid var(--cs-hairline-faint);
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--cs-neutral-dim);
+}
+
+.panelBody {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  padding: 0.9rem;
+}
+
+/* ---------------- HUD 角框 ---------------- */
+
+.hud {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+  color: var(--cs-primary);
+  /* 角框是"精密仪器"的线索，但要退到内容后面：0.55 会跟板面抢注意力 */
+  opacity: 0.4;
+}
+
+/* ---------------- 扫描线 ---------------- */
+
+.scanline {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+  overflow: hidden;
+}
+
+/* 一条很淡的光带缓慢扫过。它扫到亮板上时几乎看不见（加色在亮处不显），
+   在壳上才读得出来 —— 正好是"光在舱里移动"而不是"屏在闪"。
+   周期 14s（旧 7.5s）+ 峰值减半：这是"舒服"那条要求的直接落点。 */
+.scanlineBeam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 26vh;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(67, 217, 230, 0.026) 58%,
+    rgba(67, 217, 230, 0.07) 93%,
+    transparent 100%
+  );
+  animation: csScanSweep 14s linear infinite;
+}
+
+@keyframes csScanSweep {
+  0% {
+    top: -28vh;
+  }
+  100% {
+    top: 104vh;
+  }
+}
+
+/* ---------------- 状态片（HUD 小标签） ---------------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  padding: 0.24rem 0.6rem;
+  border: 1px solid var(--cs-hairline-faint);
+  border-radius: 999px;
+  /* 壳抬亮之后标签也要跟着抬，否则它会沉进背景里读不出来 */
+  background: rgba(16, 30, 44, 0.52);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--cs-neutral-dim);
+  white-space: nowrap;
+}
+
+.chipPrimary {
+  border-color: rgba(67, 217, 230, 0.3);
+  color: var(--cs-primary-soft);
+  box-shadow: var(--cs-glow-primary-soft);
+}
+
+.chipAccent {
+  border-color: rgba(255, 122, 168, 0.3);
+  color: var(--cs-accent-soft);
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cs-primary);
+  box-shadow: var(--cs-glow-primary);
+  /* "呼吸"而不是"眨眼"：周期放慢、幅度收窄。旧值 2.4s / 1→0.35 在余光里像在闪。 */
+  animation: csPulse 3.6s ease-in-out infinite;
+}
+
+.dotAccent {
+  background: var(--cs-accent);
+  box-shadow: var(--cs-glow-accent);
+}
+
+@keyframes csPulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.58;
+    transform: scale(0.88);
+  }
+}
+
+/* ---------------- 分隔细线 ---------------- */
+
+.hairline {
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--cs-hairline) 12%,
+    var(--cs-hairline) 88%,
+    transparent
+  );
+}
+
+/* ---------------- 图标 ---------------- */
+
+.icon {
+  width: 1em;
+  height: 1em;
+  display: block;
+  flex: none;
+}
+
+/* ---------------- 按钮（HUD 风格，无 emoji） ---------------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.85rem;
+  border: 1px solid var(--cs-hairline);
+  border-radius: var(--cs-radius-sm);
+  background: rgba(16, 30, 44, 0.58);
+  color: var(--cs-neutral-dim);
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.button:hover {
+  color: var(--cs-neutral);
+  border-color: var(--cs-glass-border-strong);
+  background: rgba(24, 44, 62, 0.72);
+}
+
+.button[aria-pressed="true"] {
+  color: var(--cs-primary-soft);
+  border-color: rgba(67, 217, 230, 0.45);
+  box-shadow: var(--cs-glow-primary-soft);
+  background: rgba(20, 48, 62, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scanlineBeam,
+  .dot {
+    animation: none;
+  }
+}
